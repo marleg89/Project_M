@@ -3,10 +3,7 @@ name: CI Pipeline
 on:
   push:
     branches:
-      - main
-  pull_request:
-    branches:
-      - main
+      - 'releases/**'
 
 jobs:
   build:
@@ -39,4 +36,4 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
 
     - name: Push Docker image
-      run: docker push my-dockerhub-username/my-flask-app:latest
+      run: docker push marleg89/flask-app:latest
