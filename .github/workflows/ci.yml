@@ -5,6 +5,9 @@ on:
     branches:
       - 'releases/**'
 
+env:
+  DOCKER_USER: ${{ secrets.DOCKER_USERNAME }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -36,4 +39,4 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
 
     - name: Push Docker image
-      run: docker push ${DOCKER_USERNAME}/flask-app:latest
+      run: docker push $DOCKER_USERNAME/flask-app:latest
