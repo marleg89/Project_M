@@ -35,5 +35,9 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
+    - name: Tag Docker image
+      if: success() # Only tag if previous steps succeeded
+      run: docker tag flask-app:latest ${DOCKER_USERNAME}/flask-app:latest
+
     - name: Push Docker image
-      run: docker push marleg89/flask-app:latest
+      run: docker push ${DOCKER_USERNAME}/flask-app:latest
