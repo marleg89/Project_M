@@ -7,6 +7,9 @@ WORKDIR /app
 # Copier le fichier requirements.txt dans le conteneur
 COPY requirements.txt .
 
+# Ajouter le répertoire de travail au PYTHONPATH
+ENV PYTHONPATH=/app
+
 # Installer les dépendances
 RUN pip install --no-cache-dir -r requirements.txt
 

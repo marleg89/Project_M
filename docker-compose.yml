@@ -13,4 +13,6 @@ services:
 
   tests:
     build: .
+    environment:
+      - PYTHONPATH=/app
     command: ["pytest", "tests"]
