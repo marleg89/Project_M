@@ -6,7 +6,7 @@ on:
       - 'releases/**'
 
 env:
-  DOCKER_USER: ${{ secrets.DOCKER_USERNAME }}
+  DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
 
 jobs:
   build:
