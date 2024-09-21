@@ -1,0 +1,17 @@
+- name: Récupération de la commande 'join'
+  shell: kubeadm token create --print-join-command
+  register: join_command_raw
+
+- name: Définition de la commande 'join'
+  set_fact:
+    join_command: "{{ join_command_raw.stdout_lines[0] }}"
+
+- name: Vérification de l'état des membres du cluster
+  become: yes
+  become_user: debian
+  shell: kubectl get nodes --no-headers -o custom-columns=:.metadata.name
+  register: cluster_nodes
+
+- name: Définition de la liste des membres du cluster
+  set_fact:
+    cluster_nodes_list: "{{ cluster_nodes.stdout_lines }}"

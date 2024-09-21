@@ -1,0 +1,58 @@
+- name: Installer Kubeadm et Kubectl
+  apt:
+    name: 
+      - kubeadm=1.31.*
+      - kubectl=1.31.*
+    state: present
+    update_cache: true
+
+- name: S'assurer de l'installation de pip
+  apt:
+    name: python3-pip
+    state: present
+
+- name: Installer la librairie python kubernetes
+  pip:
+    name: kubernetes
+    state: present
+
+- name: Vérifier si le cluster est déja initialisé
+  command: kubeadm token list
+  register: kubeadm_token_list
+  ignore_errors: true
+
+- name: Initialiser le cluster
+  command: kubeadm init --pod-network-cidr=10.244.0.0/16 --apiserver-advertise-address={{ ansible_host }} --ignore-preflight-errors=all
+  when: kubeadm_token_list.rc != 0
+
+
+- name: Créer le répertoire .kube
+  become: yes
+  become_user: debian
+  file:
+    path: "$HOME/.kube"
+    state: directory
+    mode: '0755'
+
+- name: Copier admin.conf dans la config kube de l'utilisateur
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: /home/debian/.kube/config
+    remote_src: yes
+    owner: debian
+
+- name: Vérifier si le réseau des pod est installé
+  become: yes
+  become_user: debian
+  command: kubectl get pods -n kube-system -l k8s-app=calico-node
+  register: pod_network_check
+  ignore_errors: yes
+
+- name: Installer le réseau des Pods
+  become: yes
+  become_user: debian
+  shell: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml >> pod_network_setup.log
+  args:
+    chdir: $HOME
+    creates: pod_network_setup.log
+  when: "'calico-node' not in pod_network_check.stdout"
