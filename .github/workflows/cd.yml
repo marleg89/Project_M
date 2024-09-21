@@ -1,0 +1,25 @@
+name: CI/CD Pipeline
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: [self-hosted]  # Indique que le job s'exécute sur un runner auto-hébergé
+
+    steps:
+      - name: Vérifier le code source
+        uses: actions/checkout@v2
+
+      - name: Configurer Terraform
+        env:
+          TF_VAR_poolpath: ${{ secrets.POOL_PATH }}
+        run: |
+          cd Terraform_scripts 
+          terraform init
+          terraform apply -auto-approve
+
+      - name: Exécuter le script Ansible
+        run: |
+          cd ../Ansible_scripts  
+          ansible-playbook site.yml -i inventory.ini 
