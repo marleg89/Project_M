@@ -5,7 +5,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: [self-hosted]  # Indique que le job s'exécute sur un runner auto-hébergé
+    runs-on: self-hosted  
 
     steps:
       - name: Vérifier le code source
