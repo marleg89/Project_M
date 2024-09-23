@@ -16,7 +16,7 @@ resource "null_resource" "ansible_inventory" {
       echo "ansible_user=debian" >> inventory.ini
       echo "ansible_password=debian" >> inventory.ini
       echo "ansible_become_password=debian" >> inventory.ini
-      cp -f inventory.ini ../Ansible_script
+      cp -f inventory.ini ../Ansible_scripts
     EOT
   }
 
