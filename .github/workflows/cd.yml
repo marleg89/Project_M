@@ -18,12 +18,12 @@ jobs:
       - name: Configurer Terraform
         env:
           TF_VAR_poolpath: ${{ secrets.POOL_PATH }}
-        run: |
-          cd Terraform_scripts 
+        run: | 
           terraform init
           terraform apply -auto-approve
+        working-directory: ./Terraform_scripts
 
       - name: Exécuter le script Ansible
-        run: |
-          cd ../Ansible_scripts  
+        run: |  
           ansible-playbook site.yml -i inventory.ini 
+        working-directory: ./Ansible_scripts     
