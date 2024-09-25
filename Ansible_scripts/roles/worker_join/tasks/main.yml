@@ -1,14 +1,14 @@
-- name: Activer le port TCP 6443 pour la connection des noeuds 
+- name: Enable TCP port 6443 for node connection 
   wait_for: 
     host: "{{ hostvars[groups['control-plane'][0]].ansible_host }}"
     port: 6443
     timeout: 1
 
-- name: Vérifier si le noeud worker est déja membre du cluster
+- name: Check if the worker node is already a cluster member
   shell: "echo {{ inventory_hostname }}"
   register: worker_node_name
 
-- name: Joindre les noeuds worker absent du cluster
+- name: Join worker nodes not present in the cluster
   shell: |
     systemctl daemon-reload && sudo systemctl stop kubelet || true
     {{ hostvars[groups['control-plane'][0]].join_command }} >> node_joined.log && sudo systemctl start kubelet
