@@ -67,6 +67,6 @@
   kubernetes.core.k8s:
     state: present
     template: sync.yml
-    kubeconfig: /home/debian/.kube/config   # Chemin vers kubeconfig sur le nœud maître
+    kubeconfig: /home/debian/.kube/config  
   become: yes
   delegate_to: "{{ inventory_hostname }}"
