@@ -1,24 +1,24 @@
-# Utiliser une image de base officielle de Python
+# Use an official Python base image
 FROM python:3.9-slim
 
-# Définir le répertoire de travail dans le conteneur
+# Set the working directory inside the container
 WORKDIR /app
 
-# Copier le fichier requirements.txt dans le conteneur
+# Copy the requirements.txt file into the container
 COPY requirements.txt .
 
-# Installer les dépendances
+# Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copier le reste de l'application dans le conteneur
+# Copy the rest of the application into the container
 COPY . .
 
-# Définir les variables d'environnement nécessaires
+# Set necessary environment variables
 ENV FLASK_APP=app.py
 ENV FLASK_RUN_HOST=0.0.0.0
 
-# Exposer le port que l'application utilisera
+# Expose the port the application will use
 EXPOSE 5000
 
-# Définir la commande par défaut pour lancer l'application
+# Define the default command to run the application
 CMD ["flask", "run"]
