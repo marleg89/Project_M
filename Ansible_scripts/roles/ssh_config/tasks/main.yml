@@ -1,5 +1,4 @@
-# 0 Identifier les noeuds
-- name: Scanner les hôtes dans l'inventaire
+- name: Scan the hosts in the inventory
   shell: "ssh-keyscan -H -t rsa {{ hostvars[item].ansible_host }} 2> /dev/null"
   with_items: "{{ ssh_known_hosts }}"
   register: ssh_known_host_results
@@ -7,7 +6,7 @@
   delegate_to: localhost
   run_once: true
 
-- name: Mettre à jour le fichier known_host '{{ ssh_known_hosts_file }}'
+- name: Update the known_hosts file '{{ ssh_known_hosts_file }}'
   known_hosts:
     name: "{{ hostvars[item.item].ansible_host }}"
     key: "{{ item.stdout }}"
@@ -17,11 +16,8 @@
   delegate_to: localhost
   run_once: true
   no_log: true
-  
 
-
-# 1. Générer une paire de clé SSH sur la machine locale si elle n'existe pas
-- name: Vérifier si la clé privée existe déjà
+- name: Check if the private key already exists
   stat:
     path: "~/.ssh/{{ ssh_key_name }}"
   register: ssh_key_check
@@ -29,22 +25,20 @@
   run_once: true
 
 
-- name: Générer une paire de clés SSH
+- name: Generate an SSH key pair
   command: "ssh-keygen -t rsa -b 2048 -f ~/.ssh/{{ ssh_key_name }} -q -N ''"
   when: not ssh_key_check.stat.exists
   delegate_to: localhost
   run_once: true
 
-# 2. Lire la clé publique générée
-- name: Lire la clé publique générée
+- name: Read the generated public key
   slurp:
     src: "~/.ssh/{{ ssh_key_name }}.pub"
   register: ssh_public_key
   delegate_to: localhost
   run_once: true
 
-# 4. Créer le répertoire .ssh pour l'utilisateur sur les machines cibles
-- name: Créer le répertoire .ssh pour l'utilisateur
+- name: Create the .ssh directory for the user
   file:
     path: "/home/{{ ssh_user }}/.ssh"
     state: directory
@@ -53,8 +47,7 @@
     group: "{{ ssh_user }}"
   become: yes
 
-# 5. Copier la clé publique sur les machines cibles dans le fichier authorized_keys
-- name: Copier la clé publique SSH dans authorized_keys
+- name: Copy the SSH public key into authorized_keys
   copy:
     content: "{{ ssh_public_key['content'] | b64decode }}"
     dest: "/home/{{ ssh_user }}/.ssh/authorized_keys"
@@ -63,8 +56,7 @@
     mode: '0600'
   become: yes
 
-# 6. S'assurer que le service SSH est bien configuré pour les connexions par clé et sécurisé
-- name: Désactiver l'authentification par mot de passe
+- name: Disable password authentication
   lineinfile:
     path: /etc/ssh/sshd_config
     regexp: '^#?PasswordAuthentication'
@@ -73,7 +65,7 @@
     backup: yes
   become: yes
 
-- name: Désactiver l'accès root via SSH
+- name: Disable root access via SSH
   lineinfile:
     path: /etc/ssh/sshd_config
     regexp: '^#?PermitRootLogin'
@@ -82,16 +74,14 @@
     backup: yes
   become: yes
 
-# 7. Redémarrer le service SSH pour appliquer les changements
-- name: Redémarrer le service SSH
+- name: Restart the SSH service
   systemd:
     name: ssh
     state: restarted
     enabled: yes
   become: yes
 
-# 8. Enlever les mdp dans le fichier inventaire
-- name: Enlever les mots de passe dans le fichier d'inventaire
+- name: Remove passwords in the inventory file
   replace:
     path: ./inventory.ini
     regexp: 'ansible_.*password=debian'
