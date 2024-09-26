@@ -4,6 +4,7 @@
 ## Introduction
 
 This project demonstrates a complete DevOps pipeline for automating the deployment of a Flask web application in a Kubernetes environment. The goal is to showcase the integration of modern DevOps concept like CI/CD, Containerization, IaC, GitOps, Cloud environment...
+Key principles of DevOps philosophy are at the core of this project, such as idempotency, automation, and Infrastructure as Code. Future improvements will focus on ensuring availability and security.
 
 ## Technologies and Tools
 
