@@ -3,7 +3,7 @@ name: CI Pipeline
 on:
   push:
     branches:
-#      - 'releases/**'
+      - 'releases/**'
       - develop
 jobs:
   build:
@@ -29,6 +29,12 @@ jobs:
     - name: Run tests
       run: docker-compose run --rm tests
 
+    - name: Extract version from branch name
+      id: extract_version
+      run: |
+        VERSION=$(echo ${GITHUB_REF#refs/heads/releases/} | sed 's/\//-/g')
+        echo "version=$VERSION" >> $GITHUB_ENV
+
     - name: Log in to Docker Hub
       uses: docker/login-action@v2
       with:
@@ -36,14 +42,14 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
 
     - name: Push Docker image
-      run: docker push marleg89/flask-app:latest
+      run: docker push marleg89/flask-app:$${{ steps.extract_version.outputs.version }}
 
   deploy:
     runs-on: self-hosted  
 
     steps:
       - name: Vérifier le code source
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           lfs: true
       - name: Checkout LFS objects
@@ -52,8 +58,11 @@ jobs:
       - name: Configurer Terraform
         env:
           TF_VAR_poolpath: ${{ secrets.POOL_PATH }}
+          TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
         run: | 
-          terraform init
+          terraform init \
+            -backend-config="organization=${{ secrets.TF_ORGANIZATION }}" \
+            -backend-config="workspaces.name=${{ secrets.TF_WORKSPACE }}"
           terraform apply -auto-approve
         working-directory: ./Terraform_scripts
 
