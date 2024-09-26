@@ -70,3 +70,24 @@ jobs:
         run: |  
           ansible-playbook site.yml -i inventory.ini 
         working-directory: ./Ansible_scripts
+
+      - name: Extract version from branch name
+        id: extract_version
+        run: |
+          VERSION=$(echo ${GITHUB_REF#refs/heads/releases/} | sed 's/\//-/g')
+          echo "::set-output name=version::$VERSION"
+
+      - name: Update Kubernetes manifest with new image tag
+        run: |
+          sed -i "s|image: my-dockerhub-repo/myapp:.*|image: my-dockerhub-repo/myapp:${{ steps.extract_version.outputs.version }}|" k8s/deployment.yaml
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add k8s/deployment.yaml
+          git commit -m "Update manifest with new image tag ${{ steps.extract_version.outputs.version }}" || echo "No changes to commit"
+
+      - name: Push changes to GitHub
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
+        run: |
+          git push || echo "Nothing to push"
+
