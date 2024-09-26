@@ -45,6 +45,7 @@ jobs:
       run: docker push marleg89/flask-app:$${{ steps.extract_version.outputs.version }}
 
   deploy:
+    needs: build
     runs-on: self-hosted  
 
     steps:
