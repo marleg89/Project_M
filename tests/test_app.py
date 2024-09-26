@@ -10,4 +10,4 @@ def client():
 def test_home(client):
     rv = client.get('/')
     assert rv.status_code == 200
-    assert b"Welcome to My Digital App!" in rv.data
+    assert b"Welcome to My App!" in rv.data
