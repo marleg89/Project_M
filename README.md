@@ -50,10 +50,10 @@ This project is a solid foundation for future enhancements, including:
 
 
 -Linux based system (Only tested on debian 12)
--Libvirt v , KVM v
--Terraform v
--Ansible v
--Git LFS v
+-Libvirt 
+-Terraform 
+-Ansible 
+-Git LFS 
 -Self hosted GitHub runner
 
 
