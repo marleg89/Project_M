@@ -33,6 +33,7 @@ jobs:
       id: extract_version
       run: |
         VERSION=$(echo ${GITHUB_REF#refs/heads/releases/} | sed 's/\//-/g')
+        echo "VERSION=$VERSION"
         echo "version=$VERSION" >> $GITHUB_ENV
 
     - name: Log in to Docker Hub
