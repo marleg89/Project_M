@@ -48,13 +48,13 @@ This project is a solid foundation for future enhancements, including:
 
 ## Requirements
 
-
--Linux based system (Only tested on debian 12)
--Libvirt 
--Terraform 
--Ansible 
--Git LFS 
--Self hosted GitHub runner
+The following elements are mendatory on the self hosted runner:
+- Linux based system (Only tested on debian 12)
+- Libvirt 
+- Terraform 
+- Ansible 
+- Git LFS 
+- Self hosted GitHub runner
 
 
 ---
