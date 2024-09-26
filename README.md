@@ -41,7 +41,7 @@ Key principles of DevOps philosophy are at the core of this project, such as ide
 
 This project is a solid foundation for future enhancements, including:
 - **Deployment in a hybrid cloud environment**.
-- **Multi-cluster support** (using KubeFed, Rancher, OPenshift, etc.).
+- **Multi-cluster support** (using KubeFed, Rancher, Openshift, etc.).
 - **High Availability (HA) setup** for fault tolerance.
 - **Secret management** using Vault.
 - **Enhanced monitoring** with Prometheus, Grafana, and Loki for logging.
