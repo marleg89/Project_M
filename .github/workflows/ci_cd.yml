@@ -42,7 +42,7 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
 
     - name: Push Docker image
-      run: docker push marleg89/flask-app:$${{ steps.extract_version.outputs.version }}
+      run: docker push marleg89/flask-app:${{ steps.extract_version.outputs.version }}
 
   deploy:
     needs: build
