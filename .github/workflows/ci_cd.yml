@@ -51,6 +51,10 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
 
 
+    - name: Tag Docker image with version
+      run: |
+        docker tag marleg89/flask-app:latest marleg89/flask-app:${{ env.VERSION }}
+
     - name: List Docker images for debugging
       run: docker images
 
