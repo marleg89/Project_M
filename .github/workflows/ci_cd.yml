@@ -50,8 +50,11 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Push Docker image
+    - name: Push Docker image last version
       run: docker push marleg89/flask-app:${{ env.VERSION }}
+
+    - name: Push Docker image last version
+      run: docker push marleg89/flask-app:latest
 
   deploy:
     needs: build
