@@ -9,6 +9,7 @@ terraform {
 
 terraform {
   required_version = ">= 1.6.6"
+  backend "remote" {}
 }
 
 provider "libvirt" {
