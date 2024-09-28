@@ -41,3 +41,11 @@ variable "disk_size_gb" {
   type        = number
   default     = 10737418240 # 10 Gb
 }
+
+variable "organization" {
+  type = string
+}
+
+variable "workspace" {
+  type = string
+}
