@@ -11,7 +11,7 @@ resource "libvirt_domain" "domain-debian" {
     volume_id = libvirt_volume.cluster[count.index].id
   }
   network_interface {
-    network_id     = libvirt_network.bridged_nic.id
+    network_name     = libvirt_network.bridged_nic.name
     wait_for_lease = true
   }
 
