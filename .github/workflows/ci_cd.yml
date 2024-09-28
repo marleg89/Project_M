@@ -98,7 +98,7 @@ jobs:
 
       - name: Update Kubernetes manifest with new image tag
         run: |
-          sed -i "s|image: my-dockerhub-repo/myapp:.*|image: my-dockerhub-repo/myapp:${{ steps.extract_version.outputs.version }}|" k8s/deployment.yaml
+          sed -i "s|image: marleg89/flask-app:.*|image: marleg89/flask-app:${{ steps.extract_version.outputs.version }}|" k8s/webapp_deployment.yaml
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
           git add k8s/deployment.yaml
