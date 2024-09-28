@@ -83,7 +83,7 @@ jobs:
         run: | 
           terraform init \
             -backend-config="organization=${{ secrets.TF_ORGANIZATION }}" \
-            -backend-config="workspaces.name=${{ secrets.TF_WORKSPACE }}"
+            -backend-config="workspaces=${{ secrets.TF_WORKSPACE }}"
           terraform apply -auto-approve
         working-directory: ./Terraform_scripts
 
