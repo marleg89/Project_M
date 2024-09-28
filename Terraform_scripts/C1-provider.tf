@@ -9,12 +9,10 @@ terraform {
 
 terraform {
   required_version = ">= 1.6.6"
-  backend "remote" {
-    hostname = "app.terraform.io"
-    organization = "var.organization"
-
+  cloud {
+    organization = "marleg89_org"
     workspaces {
-      name = "var.workspace"
+      name = "Workspace_mlg"
     }
   }
 }
