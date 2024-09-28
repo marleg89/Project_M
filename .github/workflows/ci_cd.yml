@@ -9,9 +9,16 @@ on:
       version:
         description: 'Version to deploy (format: vX.X.X)'
         required: true
+
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    outputs:
+      version: ${{ steps.extract_version.outputs.VERSION }}
 
     steps:
     - name: Checkout code
@@ -41,7 +48,7 @@ jobs:
           else
             VERSION="${{ github.event.inputs.version }}"
           fi
-          echo "VERSION=$VERSION"
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
     - name: Log in to Docker Hub
@@ -90,13 +97,14 @@ jobs:
           ansible-playbook site.yml -i inventory.ini 
         working-directory: ./Ansible_scripts
 
+
       - name: Update Kubernetes manifest with new image tag
         run: |
-          sed -i "s|image: marleg89/flask-app:.*|image: marleg89/flask-app:${{ env.VERSION }}|" k8s/webapp_deployment.yaml
+          sed -i "s|image: marleg89/flask-app:.*|image: marleg89/flask-app:${{ needs.build.outputs.version }}|" k8s/webapp_deployment.yaml
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
           git add k8s/webapp_deployment.yaml
-          git commit -m "Update manifest with new image tag ${{ env.VERSION }}" || echo "No changes to commit"
+          git commit -m "Update manifest with new image tag ${{ needs.build.outputs.version }}" || echo "No changes to commit"
 
       - name: Push changes to GitHub
         env:
