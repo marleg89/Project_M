@@ -79,11 +79,11 @@ jobs:
       - name: Configurer Terraform
         env:
           TF_VAR_poolpath: ${{ secrets.POOL_PATH }}
+          TF_VAR_organization: ${{ secrets.TF_ORGANIZATION }}
+          TF_VAR_workspace: ${{ secrets.TF_WORKSPACE }}
           TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
         run: | 
-          terraform init \
-            -backend-config="organization=${{ secrets.TF_ORGANIZATION }}" \
-            -backend-config="workspaces.name=${{ secrets.TF_WORKSPACE }}"
+          terraform init 
           terraform apply -auto-approve
         working-directory: ./Terraform_scripts
 

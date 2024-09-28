@@ -11,6 +11,11 @@ terraform {
   required_version = ">= 1.6.6"
   backend "remote" {
     hostname = "app.terraform.io"
+    organization = "var.organization"
+
+    workspaces {
+      name = "var.workspace"
+    }
   }
 }
 
