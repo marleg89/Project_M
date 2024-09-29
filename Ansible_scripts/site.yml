@@ -21,7 +21,7 @@
   roles:
     - nodes_setup
 
-- name: Configure the control plane
+- name: Set up the control-plane
   hosts: control-plane
   become: yes
   remote_user: debian
@@ -42,6 +42,7 @@
     - worker_join
 
 - name: Install ArgoCD
+- name: Install ArgoCD 
   hosts: control-plane  
   remote_user: debian
   become: yes
