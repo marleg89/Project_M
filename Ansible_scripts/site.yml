@@ -41,7 +41,6 @@
   roles:
     - worker_join
 
-- name: Install ArgoCD
 - name: Install ArgoCD 
   hosts: control-plane  
   remote_user: debian
