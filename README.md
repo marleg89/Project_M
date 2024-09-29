@@ -51,11 +51,12 @@ This project is a solid foundation for future enhancements, including:
 ## Requirements
 
 The following elements are mendatory on the self hosted runner:
-- Linux based system (Only tested on debian 12)
-- Libvirt 
-- Terraform 
-- Ansible 
-- Git LFS 
+- Linux based system (Only tested on debian 12) - kernel: 6.1.0-23-amd64 or higher
+- Libvirt version: 9.0.0
+- qemu version: 7.2.11
+- Terraform v1.9.6 or higher
+- Ansible 2.16.11 or higher
+- Git LFS 3.5.1 
 - Self hosted GitHub runner
 
 
