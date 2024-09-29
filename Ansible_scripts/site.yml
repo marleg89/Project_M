@@ -1,47 +1,47 @@
-- name: Générer et configurer l'accès SSH sur les nœuds
+- name: Generate and configure SSH access on nodes
   hosts: all
   roles:
     - ssh_config
 
-- name: Configurer les noms d'hôtes pour tous les noeuds
+- name: Configure hostnames for all nodes
   hosts: all
   become: yes
   roles:
     - hostname_config 
 
-- name: Installer la version récente de containerd depuis le dépôt Docker 
+- name: Install the latest version of containerd from Docker repository
   hosts: all
   become: yes
   roles:
     - containerd_install
 
-- name: Configurer les nœuds pour Kubernetes
+- name: Configure nodes for Kubernetes
   hosts: all
   become: yes
   roles:
     - nodes_setup
 
-- name: Configurer le control-plane
+- name: Set up the control-plane
   hosts: control-plane
   become: yes
   remote_user: debian
   roles:
     - master_setup
 
-- name: Créer le token d'invitation des noeuds
+- name: Create node join token
   hosts: control-plane
   become: yes
   roles:
     - master_token
 
-- name: Joindre les noeuds worker
+- name: Join worker nodes
   hosts: worker
   become: yes
   remote_user: debian
   roles:
     - worker_join
 
-- name: Installer ArgoCD 
+- name: Install ArgoCD 
   hosts: control-plane  
   remote_user: debian
   become: yes

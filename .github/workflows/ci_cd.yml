@@ -76,14 +76,14 @@ jobs:
     runs-on: self-hosted  
 
     steps:
-      - name: Vérifier le code source
+      - name: Checkout code
         uses: actions/checkout@v3
         with:
           lfs: true
       - name: Checkout LFS objects
         run: git lfs pull
 
-      - name: Configurer Terraform
+      - name: Configure Terraform
         env:
           TF_VAR_poolpath: ${{ secrets.POOL_PATH }}
           TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
@@ -93,7 +93,7 @@ jobs:
           terraform apply -auto-approve
         working-directory: ./Terraform_scripts
 
-      - name: Exécuter le script Ansible
+      - name: Execute Ansible roles
         run: |  
           ansible-playbook site.yml -i ${{ secrets.INI_PATH }}inventory.ini --extra-vars "inipath=${{ secrets.INI_PATH }}"
         working-directory: ./Ansible_scripts
