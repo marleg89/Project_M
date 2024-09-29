@@ -1,4 +1,4 @@
-- name: Créer le namespace argocd
+- name: Create the ArgoCD namespace
   kubernetes.core.k8s:
     state: present
     api_version: v1
@@ -8,13 +8,13 @@
   become: yes
   delegate_to: "{{ inventory_hostname }}"
 
-- name: Télécharger le manifeste d'installation d'ArgoCD
+- name: Download the ArgoCD installation manifest
   ansible.builtin.get_url:
     url: https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
     dest: /tmp/install.yaml
   become: yes
 
-- name: Appliquer le manifeste d'installation d'ArgoCD
+- name: Apply the ArgoCD installation manifest
   kubernetes.core.k8s:
     state: present
     namespace: argocd
@@ -48,7 +48,7 @@
   become: yes
   delegate_to: "{{ inventory_hostname }}"
 
-- name: Récupérer les détails du service
+- name: Retrieve the service details
   k8s_info:
     kubeconfig: /home/debian/.kube/config
     kind: Service
@@ -58,18 +58,15 @@
   become: yes
   delegate_to: "{{ inventory_hostname }}"
 
-- name: Afficher le NodePort pour argocd-server
+- name: Display the NodePort for argocd-server
   debug:
     msg: "NodePort for argocd-server is {{ service_info.resources[0].spec.ports[1].nodePort }}"
 
 
-- name: Appliquer sync.yml pour lancer le déploiement 
+- name: Apply sync.yml to start deployment 
   kubernetes.core.k8s:
     state: present
     template: sync.yml
-    kubeconfig: /home/debian/.kube/config   # Chemin vers kubeconfig sur le nœud maître
+    kubeconfig: /home/debian/.kube/config  
   become: yes
   delegate_to: "{{ inventory_hostname }}"
-
-    
-

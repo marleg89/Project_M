@@ -1,22 +1,22 @@
 ---
-- name: Désactiver le swap
+- name: Disable swap
   shell: swapoff -a
   ignore_errors: yes
 
-- name: Retirer les entrées de swap dans /etc/fstab
+- name: Remove swap entries in /etc/fstab
   lineinfile:
     path: /etc/fstab
     regexp: '^/swapfile'
     state: absent
 
-- name: Charger les modules nécessaires
+- name: Load necessary modules
   modprobe:
     name: "{{ item }}"
   with_items:
     - overlay
     - br_netfilter
 
-- name: Configurer les paramètres sysctl
+- name: Configure sysctl parameters
   sysctl:
     name: "{{ item.key }}"
     value: "{{ item.value }}"
@@ -27,7 +27,7 @@
     - { key: 'net.bridge.bridge-nf-call-ip6tables', value: '1' }
     - { key: 'net.ipv4.ip_forward', value: '1' }
 
-- name: Installer les paquets pré-requis
+- name: Install prerequisite packages
   apt:
     name: 
       - gnupg
@@ -63,7 +63,7 @@
     state: present
     update_cache: true
 
-- name: Activer kubelet et containerd
+- name: Enable kubelet and containerd
   systemd:
     name: "{{ item }}"
     enabled: yes
