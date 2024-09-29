@@ -41,3 +41,7 @@ variable "disk_size_gb" {
   type        = number
   default     = 10737418240 # 10 Gb
 }
+
+variable "inipath" {
+  type = string
+}

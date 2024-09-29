@@ -87,6 +87,7 @@ jobs:
         env:
           TF_VAR_poolpath: ${{ secrets.POOL_PATH }}
           TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
+          TF_VAR_inipath: ${{ secrets.INI_PATH }}
         run: | 
           terraform init 
           terraform apply -auto-approve
@@ -94,7 +95,7 @@ jobs:
 
       - name: Exécuter le script Ansible
         run: |  
-          ansible-playbook site.yml -i inventory.ini 
+          ansible-playbook site.yml -i ${{ secrets.INI_PATH }}inventory.ini 
         working-directory: ./Ansible_scripts
 
 
