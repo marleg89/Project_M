@@ -1,10 +1,10 @@
-- name: S'assurer que le répertoire /etc/apt/keyrings existe
+- name: Ensure the directory /etc/apt/keyrings exists
   file:
     path: /etc/apt/keyrings
     state: directory
     mode: "0755"
 
-- name: Installer les paquets pré-requis
+- name: Install prerequisite packages
   apt:
     name: 
       - gnupg
@@ -22,52 +22,52 @@
     mode: "0644"
     force: true
 
-- name: Ajouter le dépôt Docker officiel
+- name:  Add the official Docker repository
   apt_repository:
     repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker-apt-keyring.asc] https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable"
     state: present
     filename: 'docker'
 
-- name: Ajouter la clé GPG pour le dépôt Docker
+- name: Add the GPG key for the Docker repository
   apt_key:
     url: https://download.docker.com/linux/debian/gpg
     state: present
 
-- name: Mettre à jour la liste des paquets
+- name: Update package list
   apt:
     update_cache: yes
 
-- name: Installer containerd 
+- name: Install containerd 
   apt:
     name: containerd.io
     state: latest
     force_apt_get: yes
     allow_change_held_packages: true
 
-- name: Vérifier si containerd est installé
+- name: Check if containerd is installed
   command: containerd --version
   register: containerd_version
   ignore_errors: yes
 
-- name: Afficher la version de containerd installée
+- name: Display the installed containerd version
   debug:
     msg: "Version de containerd installée : {{ containerd_version.stdout }}"
 
-- name: Vérifier si le répertoire /etc/containerd existe
+- name: Check if /etc/containerd directory exists
   stat:
     path: /etc/containerd
   register: containerd_dir
 
-- name: Créer le répertoire containerd 
+- name: Create the containerd directory 
   file:
     path: /etc/containerd
     state: directory
   when: "not containerd_dir.stat.exists"
 
-- name: Ajoute la configuration containerd 
+- name: Add containerd configuration 
   shell: /usr/bin/containerd config default > /etc/containerd/config.toml
 
-- name: Modifier systemd_cgroup et SystemdCgroup à true dans le fichier config.toml (modifier si existe)
+- name: Set systemd_cgroup and SystemdCgroup to true in config.toml (modify if exists)
   lineinfile:
     path: /etc/containerd/config.toml
     regexp: '^(\s*)(systemd_cgroup|SystemdCgroup)\s*='

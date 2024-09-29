@@ -9,7 +9,7 @@
   roles:
     - hostname_config 
 
-- name: Install the latest version of containerd from Docker repository
+- name: Install the latest version of containerd from the Docker repository
   hosts: all
   become: yes
   roles:
@@ -28,13 +28,13 @@
   roles:
     - master_setup
 
-- name: Create node join token
+- name: Create the node join token
   hosts: control-plane
   become: yes
   roles:
     - master_token
 
-- name: Join worker nodes
+- name: Join the worker nodes
   hosts: worker
   become: yes
   remote_user: debian
@@ -46,6 +46,4 @@
   remote_user: debian
   become: yes
   roles:
-    - argo_install 
-   
-    
+    - argo_install

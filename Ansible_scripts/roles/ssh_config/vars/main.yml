@@ -1,5 +1,5 @@
-ssh_key_name: "id_rsa_k8s"  # Nom du fichier de la clé SSH
-ssh_user: "debian"          # Utilisateur cible sur les machines cibles
+ssh_key_name: "id_rsa_k8s"  # SSH Key file name
+ssh_user: "debian"          # remote user on nodes
 ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
 local_user: "ansible"
 ssh_known_hosts_file: "{{ lookup('env','HOME') + '/.ssh/known_hosts' }}"
