@@ -38,10 +38,7 @@ output "masters_ips" {
 }
 
 output "workers_ips" {
-  value = {
-    worker1 = libvirt_domain.domain-debian[1].network_interface[0].addresses[0]
-    worker2 = libvirt_domain.domain-debian[2].network_interface[0].addresses[0]
-    worker3 = libvirt_domain.domain-debian[3].network_interface[0].addresses[0]
-    worker3 = libvirt_domain.domain-debian[4].network_interface[0].addresses[0]
+  value = { for idx in range(1, var.num_vms):
+    "worker${idx}" => libvirt_domain.domain-debian[idx].network_interface[0].addresses[0]
   }
 }
