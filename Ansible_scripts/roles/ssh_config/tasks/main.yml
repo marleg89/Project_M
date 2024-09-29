@@ -93,7 +93,7 @@
 # 8. Enlever les mdp dans le fichier inventaire
 - name: Enlever les mots de passe dans le fichier d'inventaire
   replace:
-    path: ./inventory.ini
+    path: '{{ inipath }}/inventory.ini'
     regexp: 'ansible_.*password=debian'
     replace: ''
   delegate_to: localhost

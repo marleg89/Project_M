@@ -95,7 +95,7 @@ jobs:
 
       - name: Exécuter le script Ansible
         run: |  
-          ansible-playbook site.yml -i ${{ secrets.INI_PATH }}inventory.ini 
+          ansible-playbook site.yml -i ${{ secrets.INI_PATH }}inventory.ini --extra-vars "inipath=${{ secrets.INI_PATH }}"
         working-directory: ./Ansible_scripts
 
 
