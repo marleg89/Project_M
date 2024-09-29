@@ -1,0 +1,115 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - 'releases/**'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to deploy (format: vX.X.X)'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    outputs:
+      version: ${{ steps.extract_version.outputs.VERSION }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install Docker Compose
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y docker-compose
+
+    - name: Build Docker images
+      run: docker-compose build
+
+    - name: Run tests
+      run: docker-compose run --rm tests
+
+    - name: Extract version from branch name
+      id: extract_version
+      run: |
+          if [[ "${GITHUB_EVENT_NAME}" == "push" ]]; then
+            VERSION=$(echo ${GITHUB_REF#refs/heads/releases/})
+          else
+            VERSION="${{ github.event.inputs.version }}"
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+
+    - name: Tag Docker image with version
+      run: |
+        docker tag marleg89/flask-app:latest marleg89/flask-app:${{ env.VERSION }}
+
+    - name: List Docker images for debugging
+      run: docker images
+
+    - name: Push Docker image last version
+      run: docker push marleg89/flask-app:${{ env.VERSION }}
+
+    - name: Push Docker image last version
+      run: docker push marleg89/flask-app:latest
+
+  deploy:
+    needs: build
+    runs-on: self-hosted  
+
+    steps:
+      - name: Vérifier le code source
+        uses: actions/checkout@v3
+        with:
+          lfs: true
+      - name: Checkout LFS objects
+        run: git lfs pull
+
+      - name: Configurer Terraform
+        env:
+          TF_VAR_poolpath: ${{ secrets.POOL_PATH }}
+          TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
+          TF_VAR_inipath: ${{ secrets.INI_PATH }}
+        run: | 
+          terraform init 
+          terraform apply -auto-approve
+        working-directory: ./Terraform_scripts
+
+      - name: Exécuter le script Ansible
+        run: |  
+          ansible-playbook site.yml -i ${{ secrets.INI_PATH }}inventory.ini --extra-vars "inipath=${{ secrets.INI_PATH }}"
+        working-directory: ./Ansible_scripts
+
+
+      - name: Update Kubernetes manifest with new image tag
+        run: |
+          sed -i "s|image: marleg89/flask-app:.*|image: marleg89/flask-app:${{ needs.build.outputs.version }}|" k8s/webapp_deployment.yaml
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add k8s/webapp_deployment.yaml
+          git commit -m "Update manifest with new image tag ${{ needs.build.outputs.version }}" || echo "No changes to commit"
+
+      - name: Push changes to GitHub
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
+        run: |
+          git push || echo "Nothing to push"
+
