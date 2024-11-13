@@ -9,30 +9,43 @@
   roles:
     - hostname_config 
 
+- name: Configure load-balancer
+  hosts: load-balancer
+  become: yes
+  roles:
+    - lb_setup  
+
 - name: Install the latest version of containerd from the Docker repository
-  hosts: all
+  hosts: control-plane,worker
   become: yes
   roles:
     - containerd_install
 
 - name: Configure nodes for Kubernetes
-  hosts: all
+  hosts: control-plane,worker
   become: yes
   roles:
     - nodes_setup
 
 - name: Set up the control-plane
-  hosts: control-plane
+  hosts: "{{ groups['control-plane'][0] }}"
   become: yes
   remote_user: debian
   roles:
     - master_setup
 
-- name: Create the node join token
-  hosts: control-plane
+- name: Create the node join token and key
+  hosts: "{{ groups['control-plane'][0] }}"
   become: yes
   roles:
     - master_token
+
+- name: Join the control-plane nodes
+  hosts: control-plane
+  become: yes
+  remote_user: debian
+  roles:
+    - master_join
 
 - name: Join the worker nodes
   hosts: worker
@@ -42,7 +55,7 @@
     - worker_join
 
 - name: Install ArgoCD 
-  hosts: control-plane  
+  hosts: "{{ groups['control-plane'][0] }}"  
   remote_user: debian
   become: yes
   roles:

@@ -1,7 +1,7 @@
 variable "num_vms" {
   description = "Number of VMs to create"
   type        = number
-  default     = 5
+  default     = 8
 }
 
 variable "hostname" {

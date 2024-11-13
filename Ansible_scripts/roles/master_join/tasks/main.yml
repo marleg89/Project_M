@@ -1,0 +1,38 @@
+- name: Check if the control-plane node is already a cluster member
+  shell: "echo {{ inventory_hostname }}"
+  register: cp_node_name
+
+- name: Join control-plane nodes not present in the cluster
+  shell: |
+    systemctl daemon-reload && sudo systemctl stop kubelet || true 
+    kubeadm join 192.168.1.100:6443 \
+    --token {{ hostvars[groups['control-plane'][0]].join_token[0] }} \
+    --discovery-token-ca-cert-hash sha256:{{ hostvars[groups['control-plane'][0]].join_discovery_hash[0] }} \
+    --control-plane \
+    --certificate-key {{ hostvars[groups['control-plane'][0]].join_cert_key[0] }} >> node_joined.log && sudo systemctl start kubelet
+  args:
+    chdir: /home/debian
+  when: cp_node_name.stdout not in hostvars[groups['control-plane'][0]].cluster_nodes_list
+  register: cp_joined
+
+- name: Create the .kube directory
+  become: yes
+  become_user: debian
+  file:
+    path: "$HOME/.kube"
+    state: directory
+    mode: '0755'
+  when: cp_joined.changed
+
+- name: Copy admin.conf to user's kube config
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: /home/debian/.kube/config
+    remote_src: yes
+    owner: debian
+  when: cp_joined.changed
+
+- name: Install Kubectl
+  apt:
+    name: 
+      - kubectl=1.31.*

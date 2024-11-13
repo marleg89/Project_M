@@ -1,0 +1,124 @@
+- name: Gather facts to ensure ansible_facts are available
+  ansible.builtin.setup:
+
+- name: Install prerequisite packages
+  apt:
+    name: 
+      - gnupg2
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - lsb-release
+      - keepalived
+    state: present
+  become: yes
+  when: ansible_facts['os_family'] == "Debian"
+
+- name: Add the GPG key for the Nginx repository
+  ansible.builtin.apt_key:
+    url: https://nginx.org/keys/nginx_signing.key
+    state: present
+
+- name: Add the official Nginx repository 
+  ansible.builtin.apt_repository:
+    repo: "deb http://nginx.org/packages/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} nginx"
+    state: present
+    filename: nginx
+    update_cache: yes
+
+- name: Install nginx packages
+  apt:
+    name: nginx
+    state: present
+  become: yes
+  when: ansible_facts['os_family'] == "Debian"
+
+- name: Check if each control plane IP is present in Nginx config
+  shell: "grep -q 'server {{ hostvars[item]['ansible_host'] }}:6443;' /etc/nginx/nginx.conf"
+  loop: "{{ groups['control-plane'] }}"
+  failed_when: false
+  changed_when: false
+  register: nginx_ips_present
+
+- name: Set flag if configuration contains all required IPs
+  set_fact:
+    nginx_conf_contains_all_ips: "{{ nginx_ips_present.results | selectattr('rc', '==', 0) | list | length == groups['control-plane'] | length }}"
+
+- name: Copy base Nginx configuration if it has changed
+  copy:
+    src: templates/nginx.conf
+    dest: /etc/nginx/nginx.conf
+    owner: root
+    group: root
+    mode: '0644'
+    force: yes
+  when: not nginx_conf_contains_all_ips
+  notify: Restart Nginx
+  register: base_conf_copied
+
+- name: Add control plane IP addresses only if not present
+  blockinfile:
+    path: /etc/nginx/nginx.conf
+    marker: "# {mark} ANSIBLE MANAGED BLOCK"
+    block: |
+      {% for host in groups['control-plane'] %}
+      server {{ hostvars[host]['ansible_host'] }}:6443 max_fails=3 fail_timeout=30s;
+      {% endfor %}
+    insertafter: "kube_apiserver {"
+  notify: Restart Nginx
+  when: base_conf_copied.changed 
+
+- name: Copy lb check up script
+  copy:
+    src: templates/check_server.sh
+    dest: /etc/keepalived/check_server.sh
+    owner: root
+    group: root
+    mode: '0644'
+    force: no
+
+- name: Check if Keepalived configuration file exists
+  stat:
+    path: /etc/keepalived/keepalived.conf
+  register: keepalived_conf
+
+- name: Identify the network interface connected to a specific subnet
+  set_fact:
+    keepalived_interface: "{{ item }}"
+  loop: "{{ ansible_interfaces }}"
+  when: >
+    hostvars[inventory_hostname]['ansible_' + item].ipv4.address is defined and
+    hostvars[inventory_hostname]['ansible_' + item].ipv4.address is search(expected_subnet)
+  vars:
+    expected_subnet: "192.168."  # Specify the desired subnet prefix
+
+- name: Calculate priority and state based on inventory order
+  set_fact:
+    node_priority: "{{ 100 - (play_hosts.index(inventory_hostname)) }}"
+
+- name: Determine node state based on priority
+  set_fact:
+    node_state: "{{ 'MASTER' if node_priority | int == 100 | int else 'BACKUP' }}"
+
+- name: Copy base Keepalived configuration if not present
+  template:
+    src: templates/keepalived.conf.j2
+    dest: /etc/keepalived/keepalived.conf
+    owner: root
+    group: root
+    mode: '0644'
+  vars:
+    interface_name: "{{ keepalived_interface }}"
+    priority_number: "{{ node_priority }}"
+    state_name: "{{ node_state }}"
+  notify: Restart Keepalived
+  when: not keepalived_conf.stat.exists
+  register: keepalived_conf_applied
+
+
+- name: Ensure Keepalived configuration is applied
+  command: keepalived -f /etc/keepalived/keepalived.conf
+  when: keepalived_conf_applied.changed
+
+
+
